@@ -17,7 +17,7 @@ def version
 end
 ```
 
-you could use [version_reader](https://github.com/luxflux/version_reader]
+you could use [version_reader](https://github.com/luxflux/version_reader)
 (written by me) which reads the ```VERSION```-file and does all the
 stripping and formatting for you.
 
@@ -39,7 +39,7 @@ Now, you can display a nicely formatted version
 version_reader.normal # Output: 0.4.2
 ```
 
-If you don't like this output, just create a flavor to create a
+If you don't like this output, just write a flavor to add a
 different one. There is already a Rails-flavor which adds some
 additional output formats:
 
@@ -49,10 +49,10 @@ version_reader.rails_env # 0.4.2-development
 ```
 
 Check the [Readme](https://github.com/luxflux/version_reader) for more
-details about.
+details.
 
 By the way, if you are using this Gem in your Rails-Application, it will
-automatically define ```MyApp::Application.version`` with a
+automatically define ```MyApp::Application.version``` with a
 Rails-flavored instance of ```VersionReader```.
 
 
