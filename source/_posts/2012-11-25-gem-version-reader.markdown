@@ -6,7 +6,7 @@ comments: true
 categories:
 ---
 
-If you are using a ```VERSION```-File to give your new (or old) cool
+If you are using a ```VERSION```-file to give your new (or old) cool
 software tool a version, you maybe also want to display it in the footer
 of the website or in the ```help``` command option of your CLI.
 
@@ -23,9 +23,9 @@ stripping and formatting for you.
 
 <!-- more -->
 
-Version Reader is just a small wrapper around the ```VERSION```-File.
+Version Reader is just a small wrapper around the ```VERSION```-file.
 
-A short example, imagine that your ```VERSION```-File is in ```~/MyApp/```
+A short example, imagine that your ```VERSION```-file is in ```~/MyApp/```
 with the content ```0.4.2\n```. Load the version with the following code:
 
 ```ruby
