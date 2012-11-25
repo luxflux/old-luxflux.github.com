@@ -25,7 +25,7 @@ stripping and formatting for you.
 
 Version Reader is just a small wrapper around the ```VERSION```-file.
 
-A short example, imagine that your ```VERSION```-file is in ```~/MyApp/```
+Let's do a short example. Imagine that your ```VERSION```-file is in ```~/MyApp/```
 with the content ```0.4.2\n```. Load the version with the following code:
 
 ```ruby
@@ -45,14 +45,14 @@ additional output formats:
 
 ```ruby
 version_reader.extend VersionReader::Flavor::Rails
-version_reader.rails_env # 0.4.2-development
+version_reader.rails_env # Output: 0.4.2-development
 ```
 
 Check the [Readme](https://github.com/luxflux/version_reader) for more
 details.
 
-By the way, if you are using this Gem in your Rails-Application, it will
-automatically define ```MyApp::Application.version``` with a
+By the way, if you add this Gem in the ```Gemfile``` of your Rails-Application,
+it will automatically define ```MyApp::Application.version``` with a
 Rails-flavored instance of ```VersionReader```.
 
 
