@@ -3,7 +3,7 @@ layout: post
 title: "Gem: Version Reader"
 date: 2012-11-25 15:16
 comments: true
-categories:
+categories: [Ruby, Gem, version_reader]
 ---
 
 If you are using a ```VERSION```-file to give your new (or old) cool
