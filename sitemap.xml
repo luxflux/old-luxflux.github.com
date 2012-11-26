@@ -1,0 +1,23 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<urlset xmlns='http://www.sitemaps.org/schemas/sitemap/0.9'>
+    <url>
+        <loc>http://blog.yux.ch/blog/2012/11/24/hello-world/</loc>
+        <lastmod>2012-11-26T15:36:56+01:00</lastmod>
+    </url>
+    <url>
+        <loc>http://blog.yux.ch/blog/2012/11/25/gem-version-reader/</loc>
+        <lastmod>2012-11-26T15:36:56+01:00</lastmod>
+    </url>
+    <url>
+        <loc>http://blog.yux.ch/blog/2012/11/25/hubot-ubuntu-and-deb-packages/</loc>
+        <lastmod>2012-11-26T15:36:56+01:00</lastmod>
+    </url>
+    <url>
+        <loc>http://blog.yux.ch/blog/archives/</loc>
+        <lastmod>2012-11-26T15:36:56+01:00</lastmod>
+    </url>
+    <url>
+        <loc>http://blog.yux.ch/</loc>
+        <lastmod>2012-11-26T15:36:56+01:00</lastmod>
+    </url>
+</urlset>

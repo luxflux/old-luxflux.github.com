@@ -1,0 +1,213 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Category: Ruby | Passionate coding]]></title>
+  <link href="http://blog.yux.ch/blog/categories/ruby/atom.xml" rel="self"/>
+  <link href="http://blog.yux.ch/"/>
+  <updated>2012-11-26T15:39:09+01:00</updated>
+  <id>http://blog.yux.ch/</id>
+  <author>
+    <name><![CDATA[Raffael Schmid]]></name>
+    
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[Hubot, Ubuntu and .deb packages]]></title>
+    <link href="http://blog.yux.ch/blog/2012/11/25/hubot-ubuntu-and-deb-packages/"/>
+    <updated>2012-11-25T15:58:00+01:00</updated>
+    <id>http://blog.yux.ch/blog/2012/11/25/hubot-ubuntu-and-deb-packages</id>
+    <content type="html"><![CDATA[<p>This week I finally got the time to check out <a href="http://hubot.github.com/">Hubot</a>.
+Which really is a cool bot for your IRC/Campfire-Channel.</p>
+
+<p>As I dislike solutions like "just extract this tarball and run ..." for
+production deployment, I needed a way to deploy and configure this with
+puppet. The solution should also be very easy, so we can create a
+jenkins task to build the package.</p>
+
+<p>I came out with a solution where you just need to run two commands to
+create a new package from upstream:
+<code>bash
+rake prepare[2.3.2]
+rake build
+</code></p>
+
+<!-- more -->
+
+
+<p>My solution was to use <a href="https://github.com/jordansissel/fpm">fpm</a> to
+create a debian package from a folder which contained all the stuff to
+run Hubot.</p>
+
+<p>As there is a huge repository of <a href="https://github.com/github/hubot-scripts">Hubot-scripts</a>
+and I also wanted some plugins out of it, I also needed a configuration
+file to define which scripts I wanted to have packaged into.</p>
+
+<p>To automate the process of downloading <code>Hubot</code> and the needed scripts,
+afterwards installing the <code>npm</code>-modules and packing it with fpm,
+I decided to use <code>rake</code>.</p>
+
+<p>There is a configfile, <code>config.yml</code>.</p>
+
+<p><code>ruby Configfile (config.yml)
+package_url: 'https://github.com/downloads/github/hubot'
+scripts_url: 'https://raw.github.com/github/hubot-scripts/master/src/scripts'
+scripts:
+ - jenkins
+ - moarcatsme
+ - redmine
+</code></p>
+
+<p>The <code>Rakefile</code> contains all the rake-tasks which are used to build
+the package.</p>
+
+<p>```ruby Rakefile
+require 'yaml'</p>
+
+<p>desc "Prepare the package"
+task :prepare, [:version] do |task,args|
+  config = YAML.load_file('config.yml')</p>
+
+<p>  sh "echo #{args.version} > VERSION"</p>
+
+<p>  Dir.mkdir 'workdir'
+  Dir.mkdir 'packages'</p>
+
+<p>  Dir.chdir 'workdir'</p>
+
+<p>  sh "curl -L #{config['package_url']}/hubot-#{args.version}.tar.gz | tar xzf -"</p>
+
+<p>  config['scripts'].each do |script|</p>
+
+<pre><code>sh "curl -L #{config['scripts_url']}/#{script}.coffee &gt; scripts/#{script}.coffee"
+</code></pre>
+
+<p>  end</p>
+
+<p>  sh 'npm install coffee-script'
+  sh 'npm install hubot-irc --save'
+  sh 'npm install'
+end</p>
+
+<p>desc 'Build the package'
+task :build do
+  Dir.chdir 'workdir'
+  sh 'fpm -s dir -t deb -n hubot --prefix /opt -v $(cat ../VERSION) -d nodejs --after-install ../postinst --before-install ../preinst hubot'
+  Dir.chdir '..'
+  sh 'cp workdir/hubot<em>$(cat VERSION)</em>amd64.deb packages/'</p>
+
+<p>  sh 'fpm -s dir -t deb -n hubot-init --prefix / -v $(cat VERSION) -d hubot,upstart --package packages/hubot-init-$(cat VERSION)_amd64.deb etc'
+end
+```</p>
+
+<p>The <code>prepare</code>-task takes one argument which should be the version (e.g <code>2.3.2</code>).
+It downloads the tarball of this version and extracts it in a subfolder.
+Then it downloads all the specified scripts and puts them into the
+correct folder of Hubot.
+Afterwards it installs the <code>npm</code>-modules to another subfolder of
+hubot.</p>
+
+<p>The most interesting part are the <code>fpm</code>-lines:
+<code>ruby fpm command to create the package
+sh 'fpm -s dir -t deb -n hubot --prefix /opt -v $(cat ../VERSION) -d nodejs --after-install ../postinst --before-install ../preinst hubot'
+</code></p>
+
+<p>This command creates a debian package (<code>-t deb</code>) from a directory
+(<code>-s dir</code>) and throws all the stuff of the given directory
+(last argument, <code>hubot</code>) in <code>/opt</code> (<code>--prefix /opt</code>).
+It uses the version we gave the <code>prepare</code>-task
+and adds a <code>preinst</code> and a <code>postinst</code> file.
+With <code>-d nodejs</code> we set a dependency on <code>nodejs</code>.
+We need to change the current workingdir, otherwhise fpm would deploy
+the stuff in <code>/opt/workdir/hubot</code>.</p>
+
+<p>The second fpm command packages the init script and the example config
+file from the <code>etc</code>-folder.
+<code>ruby fpm command to package the init script and example config
+sh 'fpm -s dir -t deb -n hubot-init --prefix / -v $(cat VERSION) -d hubot,upstart --package packages/hubot-init-$(cat VERSION)_amd64.deb etc'
+</code></p>
+
+<p>The <code>preinst</code> and <code>postinst</code> scripts just add a <code>hubot</code>
+user and set the rights on <code>/opt/hubot</code> as fpm
+<a href="https://github.com/jordansissel/fpm/issues/178">does not support right management for debian packages</a>,
+yet.</p>
+
+<p>I tried several times to get all these stuff working. For an easier cleanup
+between the tries, I added another task:
+```ruby cleanup task
+require 'fileutils'</p>
+
+<p>desc "Cleanup the workdir"
+task :cleanup do
+  FileUtils.rm_r 'workdir' if File.exists? 'workdir'
+  FileUtils.rm_r 'packages' if File.exists? 'packages'
+end
+```</p>
+
+<p>Now we just need to modify the <code>config.yml</code>, push the changes and
+call Hubot in our IRC-Channel to trigger the jenkins build:
+<code>
+hubot jenkins build hubot-build-deb, version=2.3.2
+</code></p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Gem: Version Reader]]></title>
+    <link href="http://blog.yux.ch/blog/2012/11/25/gem-version-reader/"/>
+    <updated>2012-11-25T15:16:00+01:00</updated>
+    <id>http://blog.yux.ch/blog/2012/11/25/gem-version-reader</id>
+    <content type="html"><![CDATA[<p>If you are using a <code>VERSION</code>-file to give your new (or old) cool
+software tool a version, you maybe also want to display it in the footer
+of the website or in the <code>help</code> command option of your CLI.</p>
+
+<p>Instead of writing stuff like this
+<code>ruby
+def version
+  @version ||= File.open('VERSION', 'rb') { |f| f.read }.strip
+end
+</code></p>
+
+<p>you could use <a href="https://github.com/luxflux/version_reader">version_reader</a>
+(written by me) which reads the <code>VERSION</code>-file and does all the
+stripping and formatting for you.</p>
+
+<!-- more -->
+
+
+<p>Version Reader is just a small wrapper around the <code>VERSION</code>-file.</p>
+
+<p>Let's do a short example. Imagine that your <code>VERSION</code>-file is in <code>~/MyApp/</code>
+with the content <code>0.4.2\n</code>. Load the version with the following code:</p>
+
+<p>```ruby
+require 'version_reader'</p>
+
+<p>version_reader = VersionReader.new('~/MyApp/VERSION')
+```</p>
+
+<p>Now, you can display a nicely formatted version
+<code>ruby
+version_reader.normal # Output: 0.4.2
+</code></p>
+
+<p>If you don't like this output, just write a flavor to add a
+different one. There is already a Rails-flavor which adds some
+additional output formats:</p>
+
+<p><code>ruby
+version_reader.extend VersionReader::Flavor::Rails
+version_reader.rails_env # Output: 0.4.2-development
+</code></p>
+
+<p>Check the <a href="https://github.com/luxflux/version_reader">Readme</a> for more
+details.</p>
+
+<p>By the way, if you add this Gem in the <code>Gemfile</code> of your Rails-Application,
+it will automatically define <code>MyApp::Application.version</code> with a
+Rails-flavored instance of <code>VersionReader</code>.</p>
+]]></content>
+  </entry>
+  
+</feed>

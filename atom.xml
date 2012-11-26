@@ -1,0 +1,298 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Passionate coding]]></title>
+  <link href="http://blog.yux.ch/atom.xml" rel="self"/>
+  <link href="http://blog.yux.ch/"/>
+  <updated>2012-11-26T15:39:09+01:00</updated>
+  <id>http://blog.yux.ch/</id>
+  <author>
+    <name><![CDATA[Raffael Schmid]]></name>
+    
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[Hubot, Ubuntu and .deb packages]]></title>
+    <link href="http://blog.yux.ch/blog/2012/11/25/hubot-ubuntu-and-deb-packages/"/>
+    <updated>2012-11-25T15:58:00+01:00</updated>
+    <id>http://blog.yux.ch/blog/2012/11/25/hubot-ubuntu-and-deb-packages</id>
+    <content type="html"><![CDATA[<p>This week I finally got the time to check out <a href="http://hubot.github.com/">Hubot</a>.
+Which really is a cool bot for your IRC/Campfire-Channel.</p>
+
+<p>As I dislike solutions like &#8220;just extract this tarball and run &#8230;&#8221; for
+production deployment, I needed a way to deploy and configure this with
+puppet. The solution should also be very easy, so we can create a
+jenkins task to build the package.</p>
+
+<p>I came out with a solution where you just need to run two commands to
+create a new package from upstream:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'>rake prepare<span class="o">[</span>2.3.2<span class="o">]</span>
+</span><span class='line'>rake build
+</span></code></pre></td></tr></table></div></figure>
+
+
+
+
+<!-- more -->
+
+
+<p>My solution was to use <a href="https://github.com/jordansissel/fpm">fpm</a> to
+create a debian package from a folder which contained all the stuff to
+run Hubot.</p>
+
+<p>As there is a huge repository of <a href="https://github.com/github/hubot-scripts">Hubot-scripts</a>
+and I also wanted some plugins out of it, I also needed a configuration
+file to define which scripts I wanted to have packaged into.</p>
+
+<p>To automate the process of downloading <code>Hubot</code> and the needed scripts,
+afterwards installing the <code>npm</code>-modules and packing it with fpm,
+I decided to use <code>rake</code>.</p>
+
+<p>There is a configfile, <code>config.yml</code>.</p>
+
+<figure class='code'><figcaption><span>Configfile (config.yml)</span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="n">package_url</span><span class="p">:</span> <span class="s1">&#39;https://github.com/downloads/github/hubot&#39;</span>
+</span><span class='line'><span class="n">scripts_url</span><span class="p">:</span> <span class="s1">&#39;https://raw.github.com/github/hubot-scripts/master/src/scripts&#39;</span>
+</span><span class='line'><span class="n">scripts</span><span class="p">:</span>
+</span><span class='line'> <span class="o">-</span> <span class="n">jenkins</span>
+</span><span class='line'> <span class="o">-</span> <span class="n">moarcatsme</span>
+</span><span class='line'> <span class="o">-</span> <span class="n">redmine</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>The <code>Rakefile</code> contains all the rake-tasks which are used to build
+the package.</p>
+
+<figure class='code'><figcaption><span>Rakefile</span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="nb">require</span> <span class="s1">&#39;yaml&#39;</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">desc</span> <span class="s2">&quot;Prepare the package&quot;</span>
+</span><span class='line'><span class="n">task</span> <span class="ss">:prepare</span><span class="p">,</span> <span class="o">[</span><span class="ss">:version</span><span class="o">]</span> <span class="k">do</span> <span class="o">|</span><span class="n">task</span><span class="p">,</span><span class="n">args</span><span class="o">|</span>
+</span><span class='line'>  <span class="n">config</span> <span class="o">=</span> <span class="no">YAML</span><span class="o">.</span><span class="n">load_file</span><span class="p">(</span><span class="s1">&#39;config.yml&#39;</span><span class="p">)</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="n">sh</span> <span class="s2">&quot;echo </span><span class="si">#{</span><span class="n">args</span><span class="o">.</span><span class="n">version</span><span class="si">}</span><span class="s2"> &gt; VERSION&quot;</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="no">Dir</span><span class="o">.</span><span class="n">mkdir</span> <span class="s1">&#39;workdir&#39;</span>
+</span><span class='line'>  <span class="no">Dir</span><span class="o">.</span><span class="n">mkdir</span> <span class="s1">&#39;packages&#39;</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="no">Dir</span><span class="o">.</span><span class="n">chdir</span> <span class="s1">&#39;workdir&#39;</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="n">sh</span> <span class="s2">&quot;curl -L </span><span class="si">#{</span><span class="n">config</span><span class="o">[</span><span class="s1">&#39;package_url&#39;</span><span class="o">]</span><span class="si">}</span><span class="s2">/hubot-</span><span class="si">#{</span><span class="n">args</span><span class="o">.</span><span class="n">version</span><span class="si">}</span><span class="s2">.tar.gz | tar xzf -&quot;</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="n">config</span><span class="o">[</span><span class="s1">&#39;scripts&#39;</span><span class="o">].</span><span class="n">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">script</span><span class="o">|</span>
+</span><span class='line'>    <span class="n">sh</span> <span class="s2">&quot;curl -L </span><span class="si">#{</span><span class="n">config</span><span class="o">[</span><span class="s1">&#39;scripts_url&#39;</span><span class="o">]</span><span class="si">}</span><span class="s2">/</span><span class="si">#{</span><span class="n">script</span><span class="si">}</span><span class="s2">.coffee &gt; scripts/</span><span class="si">#{</span><span class="n">script</span><span class="si">}</span><span class="s2">.coffee&quot;</span>
+</span><span class='line'>  <span class="k">end</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="n">sh</span> <span class="s1">&#39;npm install coffee-script&#39;</span>
+</span><span class='line'>  <span class="n">sh</span> <span class="s1">&#39;npm install hubot-irc --save&#39;</span>
+</span><span class='line'>  <span class="n">sh</span> <span class="s1">&#39;npm install&#39;</span>
+</span><span class='line'><span class="k">end</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">desc</span> <span class="s1">&#39;Build the package&#39;</span>
+</span><span class='line'><span class="n">task</span> <span class="ss">:build</span> <span class="k">do</span>
+</span><span class='line'>  <span class="no">Dir</span><span class="o">.</span><span class="n">chdir</span> <span class="s1">&#39;workdir&#39;</span>
+</span><span class='line'>  <span class="n">sh</span> <span class="s1">&#39;fpm -s dir -t deb -n hubot --prefix /opt -v $(cat ../VERSION) -d nodejs --after-install ../postinst --before-install ../preinst hubot&#39;</span>
+</span><span class='line'>  <span class="no">Dir</span><span class="o">.</span><span class="n">chdir</span> <span class="s1">&#39;..&#39;</span>
+</span><span class='line'>  <span class="n">sh</span> <span class="s1">&#39;cp workdir/hubot_$(cat VERSION)_amd64.deb packages/&#39;</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="n">sh</span> <span class="s1">&#39;fpm -s dir -t deb -n hubot-init --prefix / -v $(cat VERSION) -d hubot,upstart --package packages/hubot-init-$(cat VERSION)_amd64.deb etc&#39;</span>
+</span><span class='line'><span class="k">end</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>The <code>prepare</code>-task takes one argument which should be the version (e.g <code>2.3.2</code>).
+It downloads the tarball of this version and extracts it in a subfolder.
+Then it downloads all the specified scripts and puts them into the
+correct folder of Hubot.
+Afterwards it installs the <code>npm</code>-modules to another subfolder of
+hubot.</p>
+
+<p>The most interesting part are the <code>fpm</code>-lines:</p>
+
+<figure class='code'><figcaption><span>fpm command to create the package</span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="n">sh</span> <span class="s1">&#39;fpm -s dir -t deb -n hubot --prefix /opt -v $(cat ../VERSION) -d nodejs --after-install ../postinst --before-install ../preinst hubot&#39;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>This command creates a debian package (<code>-t deb</code>) from a directory
+(<code>-s dir</code>) and throws all the stuff of the given directory
+(last argument, <code>hubot</code>) in <code>/opt</code> (<code>--prefix /opt</code>).
+It uses the version we gave the <code>prepare</code>-task
+and adds a <code>preinst</code> and a <code>postinst</code> file.
+With <code>-d nodejs</code> we set a dependency on <code>nodejs</code>.
+We need to change the current workingdir, otherwhise fpm would deploy
+the stuff in <code>/opt/workdir/hubot</code>.</p>
+
+<p>The second fpm command packages the init script and the example config
+file from the <code>etc</code>-folder.</p>
+
+<figure class='code'><figcaption><span>fpm command to package the init script and example config</span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="n">sh</span> <span class="s1">&#39;fpm -s dir -t deb -n hubot-init --prefix / -v $(cat VERSION) -d hubot,upstart --package packages/hubot-init-$(cat VERSION)_amd64.deb etc&#39;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>The <code>preinst</code> and <code>postinst</code> scripts just add a <code>hubot</code>
+user and set the rights on <code>/opt/hubot</code> as fpm
+<a href="https://github.com/jordansissel/fpm/issues/178">does not support right management for debian packages</a>,
+yet.</p>
+
+<p>I tried several times to get all these stuff working. For an easier cleanup
+between the tries, I added another task:</p>
+
+<figure class='code'><figcaption><span>cleanup task</span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="nb">require</span> <span class="s1">&#39;fileutils&#39;</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">desc</span> <span class="s2">&quot;Cleanup the workdir&quot;</span>
+</span><span class='line'><span class="n">task</span> <span class="ss">:cleanup</span> <span class="k">do</span>
+</span><span class='line'>  <span class="no">FileUtils</span><span class="o">.</span><span class="n">rm_r</span> <span class="s1">&#39;workdir&#39;</span> <span class="k">if</span> <span class="no">File</span><span class="o">.</span><span class="n">exists?</span> <span class="s1">&#39;workdir&#39;</span>
+</span><span class='line'>  <span class="no">FileUtils</span><span class="o">.</span><span class="n">rm_r</span> <span class="s1">&#39;packages&#39;</span> <span class="k">if</span> <span class="no">File</span><span class="o">.</span><span class="n">exists?</span> <span class="s1">&#39;packages&#39;</span>
+</span><span class='line'><span class="k">end</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Now we just need to modify the <code>config.yml</code>, push the changes and
+call Hubot in our IRC-Channel to trigger the jenkins build:</p>
+
+<figure class='code'><figcaption><span>cleanup task</span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="n">hubot</span> <span class="n">jenkins</span> <span class="n">build</span> <span class="n">hubot</span><span class="o">-</span><span class="n">build</span><span class="o">-</span><span class="n">deb</span><span class="p">,</span> <span class="n">version</span><span class="o">=</span><span class="mi">2</span><span class="o">.</span><span class="mi">3</span><span class="o">.</span><span class="mi">2</span>
+</span></code></pre></td></tr></table></div></figure>
+
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Gem: Version Reader]]></title>
+    <link href="http://blog.yux.ch/blog/2012/11/25/gem-version-reader/"/>
+    <updated>2012-11-25T15:16:00+01:00</updated>
+    <id>http://blog.yux.ch/blog/2012/11/25/gem-version-reader</id>
+    <content type="html"><![CDATA[<p>If you are using a <code>VERSION</code>-file to give your new (or old) cool
+software tool a version, you maybe also want to display it in the footer
+of the website or in the <code>help</code> command option of your CLI.</p>
+
+<p>Instead of writing stuff like this</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="k">def</span> <span class="nf">version</span>
+</span><span class='line'>  <span class="vi">@version</span> <span class="o">||=</span> <span class="no">File</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s1">&#39;VERSION&#39;</span><span class="p">,</span> <span class="s1">&#39;rb&#39;</span><span class="p">)</span> <span class="p">{</span> <span class="o">|</span><span class="n">f</span><span class="o">|</span> <span class="n">f</span><span class="o">.</span><span class="n">read</span> <span class="p">}</span><span class="o">.</span><span class="n">strip</span>
+</span><span class='line'><span class="k">end</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>you could use <a href="https://github.com/luxflux/version_reader">version_reader</a>
+(written by me) which reads the <code>VERSION</code>-file and does all the
+stripping and formatting for you.</p>
+
+<!-- more -->
+
+
+<p>Version Reader is just a small wrapper around the <code>VERSION</code>-file.</p>
+
+<p>Let&#8217;s do a short example. Imagine that your <code>VERSION</code>-file is in <code>~/MyApp/</code>
+with the content <code>0.4.2\n</code>. Load the version with the following code:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="nb">require</span> <span class="s1">&#39;version_reader&#39;</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">version_reader</span> <span class="o">=</span> <span class="no">VersionReader</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="s1">&#39;~/MyApp/VERSION&#39;</span><span class="p">)</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Now, you can display a nicely formatted version</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="n">version_reader</span><span class="o">.</span><span class="n">normal</span> <span class="c1"># Output: 0.4.2</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>If you don&#8217;t like this output, just write a flavor to add a
+different one. There is already a Rails-flavor which adds some
+additional output formats:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="n">version_reader</span><span class="o">.</span><span class="n">extend</span> <span class="no">VersionReader</span><span class="o">::</span><span class="no">Flavor</span><span class="o">::</span><span class="no">Rails</span>
+</span><span class='line'><span class="n">version_reader</span><span class="o">.</span><span class="n">rails_env</span> <span class="c1"># Output: 0.4.2-development</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Check the <a href="https://github.com/luxflux/version_reader">Readme</a> for more
+details.</p>
+
+<p>By the way, if you add this Gem in the <code>Gemfile</code> of your Rails-Application,
+it will automatically define <code>MyApp::Application.version</code> with a
+Rails-flavored instance of <code>VersionReader</code>.</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Hello World]]></title>
+    <link href="http://blog.yux.ch/blog/2012/11/24/hello-world/"/>
+    <updated>2012-11-24T18:59:00+01:00</updated>
+    <id>http://blog.yux.ch/blog/2012/11/24/hello-world</id>
+    <content type="html"><![CDATA[<p>Hi everyone. This is the hello world post of this blog. This is the blog
+of Raffael Schmid and I will post stuff about coding, system
+administrating and other geeky stuff.</p>
+
+<p>About me&#8230; I&#8217;m an employee at Nine Internet Solutions AG where I first
+started as an &#8220;System Administrator&#8221;. But right from the start I was
+developing stuff and learned Ruby (on Rails). So my job description
+changed &#8220;Web Software Developer&#8221;, finally.</p>
+
+<p>This blog is hosted on <a href="http://pages.github.com/">github-pages</a> and
+powered by <a href="http://octopress.org/">Octopress</a>.</p>
+]]></content>
+  </entry>
+  
+</feed>

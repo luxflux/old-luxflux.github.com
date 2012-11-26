@@ -5,12 +5,13 @@
 <!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
 <head>
   <meta charset="utf-8">
-  <title>Passionate coding</title>
+  <title>Gem: Version Reader - Passionate coding</title>
   <meta name="author" content="Raffael Schmid">
 
   
-  <meta name="description" content="This week I finally got the time to check out Hubot.
-Which really is a cool bot for your IRC/Campfire-Channel. As I dislike solutions like &#8220; &hellip;">
+  <meta name="description" content="If you are using a VERSION-file to give your new (or old) cool
+software tool a version, you maybe also want to display it in the footer
+of the &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -19,7 +20,7 @@ Which really is a cool bot for your IRC/Campfire-Channel. As I dislike solutions
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   
-  <link rel="canonical" href="http://blog.yux.ch/">
+  <link rel="canonical" href="http://blog.yux.ch/blog/2012/11/25/gem-version-reader/">
   <link href="/favicon.png" rel="icon">
   <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
   <script src="/javascripts/modernizr-2.0.js"></script>
@@ -75,74 +76,12 @@ Which really is a cool bot for your IRC/Campfire-Channel. As I dislike solutions
 </nav>
   <div id="main">
     <div id="content">
-      <div class="blog-index">
+      <div>
+<article class="hentry" role="article">
   
-  
-  
-    <article>
-      
   <header>
     
-      <h1 class="entry-title"><a href="/blog/2012/11/25/hubot-ubuntu-and-deb-packages/">Hubot, Ubuntu and .deb Packages</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2012-11-25T15:58:00+01:00" pubdate data-updated="true">Nov 25<span>th</span>, 2012</time>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>This week I finally got the time to check out <a href="http://hubot.github.com/">Hubot</a>.
-Which really is a cool bot for your IRC/Campfire-Channel.</p>
-
-<p>As I dislike solutions like &#8220;just extract this tarball and run &#8230;&#8221; for
-production deployment, I needed a way to deploy and configure this with
-puppet. The solution should also be very easy, so we can create a
-jenkins task to build the package.</p>
-
-<p>I came out with a solution where you just need to run two commands to
-create a new package from upstream:</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'>rake prepare<span class="o">[</span>2.3.2<span class="o">]</span>
-</span><span class='line'>rake build
-</span></code></pre></td></tr></table></div></figure>
-
-
-
-
-</div>
-  
-  
-    <footer>
-      <a rel="full-article" href="/blog/2012/11/25/hubot-ubuntu-and-deb-packages/">Read on &rarr;</a>
-    </footer>
-  
-
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2012/11/25/gem-version-reader/">Gem: Version Reader</a></h1>
+      <h1 class="entry-title">Gem: Version Reader</h1>
     
     
       <p class="meta">
@@ -165,7 +104,7 @@ create a new package from upstream:</p>
   </header>
 
 
-  <div class="entry-content"><p>If you are using a <code>VERSION</code>-file to give your new (or old) cool
+<div class="entry-content"><p>If you are using a <code>VERSION</code>-file to give your new (or old) cool
 software tool a version, you maybe also want to display it in the footer
 of the website or in the <code>help</code> command option of your CLI.</p>
 
@@ -184,27 +123,58 @@ of the website or in the <code>help</code> command option of your CLI.</p>
 (written by me) which reads the <code>VERSION</code>-file and does all the
 stripping and formatting for you.</p>
 
+<!-- more -->
+
+
+<p>Version Reader is just a small wrapper around the <code>VERSION</code>-file.</p>
+
+<p>Let&#8217;s do a short example. Imagine that your <code>VERSION</code>-file is in <code>~/MyApp/</code>
+with the content <code>0.4.2\n</code>. Load the version with the following code:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="nb">require</span> <span class="s1">&#39;version_reader&#39;</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">version_reader</span> <span class="o">=</span> <span class="no">VersionReader</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="s1">&#39;~/MyApp/VERSION&#39;</span><span class="p">)</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Now, you can display a nicely formatted version</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="n">version_reader</span><span class="o">.</span><span class="n">normal</span> <span class="c1"># Output: 0.4.2</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>If you don&#8217;t like this output, just write a flavor to add a
+different one. There is already a Rails-flavor which adds some
+additional output formats:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="n">version_reader</span><span class="o">.</span><span class="n">extend</span> <span class="no">VersionReader</span><span class="o">::</span><span class="no">Flavor</span><span class="o">::</span><span class="no">Rails</span>
+</span><span class='line'><span class="n">version_reader</span><span class="o">.</span><span class="n">rails_env</span> <span class="c1"># Output: 0.4.2-development</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Check the <a href="https://github.com/luxflux/version_reader">Readme</a> for more
+details.</p>
+
+<p>By the way, if you add this Gem in the <code>Gemfile</code> of your Rails-Application,
+it will automatically define <code>MyApp::Application.version</code> with a
+Rails-flavored instance of <code>VersionReader</code>.</p>
 </div>
-  
-  
-    <footer>
-      <a rel="full-article" href="/blog/2012/11/25/gem-version-reader/">Read on &rarr;</a>
-    </footer>
-  
 
 
-    </article>
-  
-  
-    <article>
+  <footer>
+    <p class="meta">
       
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2012/11/24/hello-world/">Hello World</a></h1>
-    
-    
-      <p class="meta">
-        
+  
+
+<span class="byline author vcard">Posted by <span class="fn">Raffael Schmid</span></span>
+
+      
 
 
 
@@ -216,37 +186,44 @@ stripping and formatting for you.</p>
   
 
 
-<time datetime="2012-11-24T18:59:00+01:00" pubdate data-updated="true">Nov 24<span>th</span>, 2012</time>
-        
-      </p>
+<time datetime="2012-11-25T15:16:00+01:00" pubdate data-updated="true">Nov 25<span>th</span>, 2012</time>
+      
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/gem/'>Gem</a>, <a class='category' href='/blog/categories/ruby/'>Ruby</a>, <a class='category' href='/blog/categories/version-reader/'>version_reader</a>
+  
+</span>
+
+
+    </p>
     
-  </header>
-
-
-  <div class="entry-content"><p>Hi everyone. This is the hello world post of this blog. This is the blog
-of Raffael Schmid and I will post stuff about coding, system
-administrating and other geeky stuff.</p>
-
-<p>About me&#8230; I&#8217;m an employee at Nine Internet Solutions AG where I first
-started as an &#8220;System Administrator&#8221;. But right from the start I was
-developing stuff and learned Ruby (on Rails). So my job description
-changed &#8220;Web Software Developer&#8221;, finally.</p>
-
-<p>This blog is hosted on <a href="http://pages.github.com/">github-pages</a> and
-powered by <a href="http://octopress.org/">Octopress</a>.</p>
+      <div class="sharing">
+  
+  
+  
 </div>
-  
-  
 
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/2012/11/24/hello-world/" title="Previous Post: Hello World">&laquo; Hello World</a>
+      
+      
+        <a class="basic-alignment right" href="/blog/2012/11/25/hubot-ubuntu-and-deb-packages/" title="Next Post: Hubot, Ubuntu and .deb packages">Hubot, Ubuntu and .deb packages &raquo;</a>
+      
+    </p>
+  </footer>
+</article>
 
-    </article>
-  
-  <div class="pagination">
-    
-    <a href="/blog/archives">Blog Archives</a>
-    
-  </div>
+  <section>
+    <h1>Comments</h1>
+    <div id="disqus_thread" aria-live="polite"><noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
 </div>
+  </section>
+
+</div>
+
 <aside class="sidebar">
   
     
@@ -308,7 +285,7 @@ powered by <a href="http://octopress.org/">Octopress</a>.</p>
 <section>
   <h1>GitHub Repos</h1>
   <ul id="gh_repos">
-    <li class="loading">Status updating&#8230;</li>
+    <li class="loading">Status updating...</li>
   </ul>
   
   <a href="https://github.com/luxflux">@luxflux</a> on GitHub
@@ -342,6 +319,7 @@ powered by <a href="http://octopress.org/">Octopress</a>.</p>
   
 </aside>
 
+
     </div>
   </div>
   <footer role="contentinfo"><p>
@@ -356,7 +334,10 @@ powered by <a href="http://octopress.org/">Octopress</a>.</p>
       var disqus_shortname = 'yuxchblog';
       
         
-        var disqus_script = 'count.js';
+        // var disqus_developer = 1;
+        var disqus_identifier = 'http://blog.yux.ch/blog/2012/11/25/gem-version-reader/';
+        var disqus_url = 'http://blog.yux.ch/blog/2012/11/25/gem-version-reader/';
+        var disqus_script = 'embed.js';
       
     (function () {
       var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;

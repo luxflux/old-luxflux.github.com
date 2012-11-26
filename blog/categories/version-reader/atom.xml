@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Category: version_reader | Passionate coding]]></title>
+  <link href="http://blog.yux.ch/blog/categories/version-reader/atom.xml" rel="self"/>
+  <link href="http://blog.yux.ch/"/>
+  <updated>2012-11-26T15:39:09+01:00</updated>
+  <id>http://blog.yux.ch/</id>
+  <author>
+    <name><![CDATA[Raffael Schmid]]></name>
+    
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[Gem: Version Reader]]></title>
+    <link href="http://blog.yux.ch/blog/2012/11/25/gem-version-reader/"/>
+    <updated>2012-11-25T15:16:00+01:00</updated>
+    <id>http://blog.yux.ch/blog/2012/11/25/gem-version-reader</id>
+    <content type="html"><![CDATA[<p>If you are using a <code>VERSION</code>-file to give your new (or old) cool
+software tool a version, you maybe also want to display it in the footer
+of the website or in the <code>help</code> command option of your CLI.</p>
+
+<p>Instead of writing stuff like this
+<code>ruby
+def version
+  @version ||= File.open('VERSION', 'rb') { |f| f.read }.strip
+end
+</code></p>
+
+<p>you could use <a href="https://github.com/luxflux/version_reader">version_reader</a>
+(written by me) which reads the <code>VERSION</code>-file and does all the
+stripping and formatting for you.</p>
+
+<!-- more -->
+
+
+<p>Version Reader is just a small wrapper around the <code>VERSION</code>-file.</p>
+
+<p>Let's do a short example. Imagine that your <code>VERSION</code>-file is in <code>~/MyApp/</code>
+with the content <code>0.4.2\n</code>. Load the version with the following code:</p>
+
+<p>```ruby
+require 'version_reader'</p>
+
+<p>version_reader = VersionReader.new('~/MyApp/VERSION')
+```</p>
+
+<p>Now, you can display a nicely formatted version
+<code>ruby
+version_reader.normal # Output: 0.4.2
+</code></p>
+
+<p>If you don't like this output, just write a flavor to add a
+different one. There is already a Rails-flavor which adds some
+additional output formats:</p>
+
+<p><code>ruby
+version_reader.extend VersionReader::Flavor::Rails
+version_reader.rails_env # Output: 0.4.2-development
+</code></p>
+
+<p>Check the <a href="https://github.com/luxflux/version_reader">Readme</a> for more
+details.</p>
+
+<p>By the way, if you add this Gem in the <code>Gemfile</code> of your Rails-Application,
+it will automatically define <code>MyApp::Application.version</code> with a
+Rails-flavored instance of <code>VersionReader</code>.</p>
+]]></content>
+  </entry>
+  
+</feed>
