@@ -4,7 +4,7 @@
   <title><![CDATA[Category: Ruby | Passionate coding]]></title>
   <link href="http://blog.yux.ch/blog/categories/ruby/atom.xml" rel="self"/>
   <link href="http://blog.yux.ch/"/>
-  <updated>2012-11-26T15:39:09+01:00</updated>
+  <updated>2012-12-27T22:58:35+01:00</updated>
   <id>http://blog.yux.ch/</id>
   <author>
     <name><![CDATA[Raffael Schmid]]></name>
@@ -12,6 +12,133 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[Ruby1.9: Escape non-ASCII chars]]></title>
+    <link href="http://blog.yux.ch/blog/2012/12/27/ruby1-dot-9-escape-non-ascii-chars/"/>
+    <updated>2012-12-27T20:47:00+01:00</updated>
+    <id>http://blog.yux.ch/blog/2012/12/27/ruby1-dot-9-escape-non-ascii-chars</id>
+    <content type="html"><![CDATA[<p>What I learned recently about Unicode and Ruby. There is a <a href="blog/2012/12/27/ruby1-dot-9-escape-non-ascii-chars/#tldr">TL;DR</a>.</p>
+
+<!-- more -->
+
+
+<p>At nine.ch, we have a webinterface to administrate our mailboxes. It also can be used to
+configure (Sieve-)filters for incoming mails. These filters are persisted in a database and
+uploaded to the storage via the Managesieve protocol.</p>
+
+<p>As we wanted to migrate to a new version of storage software, the uploading of these filters started to fail for some mailboxes.
+The error was something like <code>SieveError PUTSCRIPT: Too many arguments</code>.</p>
+
+<p>Yeah, what does this mean...? <a href="http://tools.ietf.org/html/draft-martin-managesieve-12#section-2.6">The RFC says</a>
+that the syntax for <code>PUTSCRIPT</code> is like the following:</p>
+
+<p>```
+Putscript "mysievescript" {110+}
+require ["fileinto"];</p>
+
+<p>if envelope :contains "to" "tmartin+sent" {
+  fileinto "INBOX.sent";
+}
+```</p>
+
+<p>A failing upload looked like this:
+```
+Putscript "mysievescript" {823+}
+require ["fileinto","vacation","body","date","relational"];</p>
+
+<p>if allof(not header :contains ["X-Spam-Flag"] "YES") {
+  vacation :days 3 :from "'Name FamilyName' <a href="&#x6d;&#97;&#105;&#x6c;&#x74;&#x6f;&#x3a;&#110;&#97;&#x6d;&#101;&#x40;&#x64;&#111;&#109;&#x61;&#105;&#x6e;&#x2e;&#x74;&#x6c;&#x64;">&#110;&#x61;&#x6d;&#x65;&#64;&#100;&#x6f;&#x6d;&#x61;&#105;&#x6e;&#46;&#x74;&#108;&#x64;</a>" :subject "Abwesenheitsmeldung" "sehr geehrte damen und herren
+unser büro ist wegen ferienabwesenheit geschlossen. in dringenden fällen erreichen sie uns unter ....
+}</p>
+
+<h1>Rule Nr. 28804, sort_position 1</h1>
+
+<p>if header :contains ["X-Spam-Flag"] "YES" {
+  fileinto "INBOX.Spam";
+  stop;
+}
+.
+.
+.
+```</p>
+
+<p>So this should work, no? Nope, doesn't. Hmm, there are umlauts in this vacation message... Trial and error shows, that removing them helps and
+the script is accepted by the server.</p>
+
+<p>Cool, looks like the server does something strange with the string containing the script and thinks you give him more arguments than allowed.</p>
+
+<p>Now, how shall I fix this? During my research I stumbled over the extension list for <a href="http://wiki2.dovecot.org/Pigeonhole/Sieve">Pigeonhole Sieve</a>.
+There is an extension called <code>encoded-character</code>, maybe this helps? Let's try.</p>
+
+<p>We "just" have to escape these special chars according <a href="http://tools.ietf.org/html/rfc5228#section-2.4.2.4">the RFC</a>.</p>
+
+<p>A first try with the following code gave me the broken characters (Ã¼, Ã¤, ...) in the vacation answer, known from UTF-8/ISO problems.</p>
+
+<p>```ruby
+def text
+  clean_text = ''
+  @text.join("\n").each_byte do |byte|</p>
+
+<pre><code>unless byte &gt; 127
+  clean_text &lt;&lt; byte
+else
+  clean_text &lt;&lt; "${UNICODE:#{byte.to_s(16)}}"
+end
+</code></pre>
+
+<p>  end
+  clean_text
+end
+```</p>
+
+<p>Relevant part from the sieve script:
+<code>text
+unser b${UNICODE:c3}${UNICODE:bc}ro ist wegen ferienabwesenheit geschlossen.
+in dringenden f${UNICODE:bc}${UNICODE:e4}llen erreichen sie uns unter ....
+</code></p>
+
+<p>I shortly googled an <a href="http://www.utf8-chartable.de/">utf-8 chartable</a> and checked the content of the script.
+Looks like my simple <code>ü</code> and <code>ä</code> are two bytes in Unicode? And when we just translate one byte at a time, this gives us
+these (hated) character-combinations as each byte is interpreted as a single Unicode character?
+Heard about this, but never really thought about it before.</p>
+
+<p>Okay, lets consult the Ruby String documentation and check whether there is a better method to get these characters:
+<a href="http://www.ruby-doc.org/core-1.9.3/String.html#method-i-each_codepoint">String#each_codepoint</a>.</p>
+
+<p>Now it works!</p>
+
+<p>Final version of the method to use <code>each_codepoint</code>:</p>
+
+<p>```ruby
+def text
+  clean_text = ''
+  @text.join("\n").each_codepoint do |codepoint|</p>
+
+<pre><code>unless codepoint &gt; 127
+  clean_text &lt;&lt; codepoint
+else
+  clean_text &lt;&lt; "${UNICODE:#{codepoint.to_s(16)}}"
+end
+</code></pre>
+
+<p>  end
+  clean_text
+end
+```</p>
+
+<p>Relevant part from sieve script:
+<code>text
+unser b${UNICODE:fc}ro ist wegen ferienabwesenheit geschlossen.
+in dringenden f${UNICODE:e4}llen erreichen sie uns unter ....
+</code></p>
+
+<h1><a id='tldr'></a> TL;DR</h1>
+
+<p>Use <code>String#each_codepoint</code> if you read a string and want to use the hex representation of its characters. Otherwhise you create
+an encoding problem without changing the encoding.</p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[Hubot, Ubuntu and .deb packages]]></title>

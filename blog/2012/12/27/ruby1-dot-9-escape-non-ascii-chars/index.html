@@ -1,0 +1,471 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>Ruby1.9: Escape non-ASCII chars - Passionate coding</title>
+  <meta name="author" content="Raffael Schmid">
+
+  
+  <meta name="description" content="What I learned recently about Unicode and Ruby. There is a TL;DR. At nine.ch, we have a webinterface to administrate our mailboxes. It also can be &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://blog.yux.ch/blog/2012/12/27/ruby1-dot-9-escape-non-ascii-chars/">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="/javascripts/ender.js"></script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <link href="/atom.xml" rel="alternate" title="Passionate coding" type="application/atom+xml">
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href="http://fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  
+  <script type="text/javascript">
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', 'UA-36576873-1']);
+    _gaq.push(['_trackPageview']);
+
+    (function() {
+      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+    })();
+  </script>
+
+
+</head>
+
+<body   >
+  <header role="banner"><hgroup>
+  <h1><a href="/">Passionate coding</a></h1>
+  
+    <h2>Stuff about me and what I do</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="http://google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="q" value="site:blog.yux.ch" />
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">Ruby1.9: Escape non-ASCII Chars</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2012-12-27T20:47:00+01:00" pubdate data-updated="true">Dec 27<span>th</span>, 2012</time>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><p>What I learned recently about Unicode and Ruby. There is a <a href="blog/2012/12/27/ruby1-dot-9-escape-non-ascii-chars/#tldr">TL;DR</a>.</p>
+
+<!-- more -->
+
+
+<p>At nine.ch, we have a webinterface to administrate our mailboxes. It also can be used to
+configure (Sieve-)filters for incoming mails. These filters are persisted in a database and
+uploaded to the storage via the Managesieve protocol.</p>
+
+<p>As we wanted to migrate to a new version of storage software, the uploading of these filters started to fail for some mailboxes.
+The error was something like <code>SieveError PUTSCRIPT: Too many arguments</code>.</p>
+
+<p>Yeah, what does this mean&#8230;? <a href="http://tools.ietf.org/html/draft-martin-managesieve-12#section-2.6">The RFC says</a>
+that the syntax for <code>PUTSCRIPT</code> is like the following:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>Putscript "mysievescript" {110+}
+</span><span class='line'>require ["fileinto"];
+</span><span class='line'>
+</span><span class='line'>if envelope :contains "to" "tmartin+sent" {
+</span><span class='line'>  fileinto "INBOX.sent";
+</span><span class='line'>}</span></code></pre></td></tr></table></div></figure>
+
+
+<p>A failing upload looked like this:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>Putscript "mysievescript" {823+}
+</span><span class='line'>require ["fileinto","vacation","body","date","relational"];
+</span><span class='line'>
+</span><span class='line'>if allof(not header :contains ["X-Spam-Flag"] "YES") {
+</span><span class='line'>  vacation :days 3 :from "'Name FamilyName' &lt;name@domain.tld&gt;" :subject "Abwesenheitsmeldung" "sehr geehrte damen und herren
+</span><span class='line'>unser büro ist wegen ferienabwesenheit geschlossen. in dringenden fällen erreichen sie uns unter ....
+</span><span class='line'>}
+</span><span class='line'>
+</span><span class='line'># Rule Nr. 28804, sort_position 1
+</span><span class='line'>if header :contains ["X-Spam-Flag"] "YES" {
+</span><span class='line'>  fileinto "INBOX.Spam";
+</span><span class='line'>  stop;
+</span><span class='line'>}
+</span><span class='line'>.
+</span><span class='line'>.
+</span><span class='line'>.</span></code></pre></td></tr></table></div></figure>
+
+
+<p>So this should work, no? Nope, doesn&#8217;t. Hmm, there are umlauts in this vacation message&#8230; Trial and error shows, that removing them helps and
+the script is accepted by the server.</p>
+
+<p>Cool, looks like the server does something strange with the string containing the script and thinks you give him more arguments than allowed.</p>
+
+<p>Now, how shall I fix this? During my research I stumbled over the extension list for <a href="http://wiki2.dovecot.org/Pigeonhole/Sieve">Pigeonhole Sieve</a>.
+There is an extension called <code>encoded-character</code>, maybe this helps? Let&#8217;s try.</p>
+
+<p>We &#8220;just&#8221; have to escape these special chars according <a href="http://tools.ietf.org/html/rfc5228#section-2.4.2.4">the RFC</a>.</p>
+
+<p>A first try with the following code gave me the broken characters (Ã¼, Ã¤, &#8230;) in the vacation answer, known from UTF-8/ISO problems.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="k">def</span> <span class="nf">text</span>
+</span><span class='line'>  <span class="n">clean_text</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+</span><span class='line'>  <span class="vi">@text</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">each_byte</span> <span class="k">do</span> <span class="o">|</span><span class="n">byte</span><span class="o">|</span>
+</span><span class='line'>    <span class="k">unless</span> <span class="n">byte</span> <span class="o">&gt;</span> <span class="mi">127</span>
+</span><span class='line'>      <span class="n">clean_text</span> <span class="o">&lt;&lt;</span> <span class="n">byte</span>
+</span><span class='line'>    <span class="k">else</span>
+</span><span class='line'>      <span class="n">clean_text</span> <span class="o">&lt;&lt;</span> <span class="s2">&quot;${UNICODE:</span><span class="si">#{</span><span class="n">byte</span><span class="o">.</span><span class="n">to_s</span><span class="p">(</span><span class="mi">16</span><span class="p">)</span><span class="si">}</span><span class="s2">}&quot;</span>
+</span><span class='line'>    <span class="k">end</span>
+</span><span class='line'>  <span class="k">end</span>
+</span><span class='line'>  <span class="n">clean_text</span>
+</span><span class='line'><span class="k">end</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Relevant part from the sieve script:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class='text'><span class='line'>unser b${UNICODE:c3}${UNICODE:bc}ro ist wegen ferienabwesenheit geschlossen.
+</span><span class='line'>in dringenden f${UNICODE:bc}${UNICODE:e4}llen erreichen sie uns unter ....
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>I shortly googled an <a href="http://www.utf8-chartable.de/">utf-8 chartable</a> and checked the content of the script.
+Looks like my simple <code>ü</code> and <code>ä</code> are two bytes in Unicode? And when we just translate one byte at a time, this gives us
+these (hated) character-combinations as each byte is interpreted as a single Unicode character?
+Heard about this, but never really thought about it before.</p>
+
+<p>Okay, lets consult the Ruby String documentation and check whether there is a better method to get these characters:
+<a href="http://www.ruby-doc.org/core-1.9.3/String.html#method-i-each_codepoint">String#each_codepoint</a>.</p>
+
+<p>Now it works!</p>
+
+<p>Final version of the method to use <code>each_codepoint</code>:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="k">def</span> <span class="nf">text</span>
+</span><span class='line'>  <span class="n">clean_text</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+</span><span class='line'>  <span class="vi">@text</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">each_codepoint</span> <span class="k">do</span> <span class="o">|</span><span class="n">codepoint</span><span class="o">|</span>
+</span><span class='line'>    <span class="k">unless</span> <span class="n">codepoint</span> <span class="o">&gt;</span> <span class="mi">127</span>
+</span><span class='line'>      <span class="n">clean_text</span> <span class="o">&lt;&lt;</span> <span class="n">codepoint</span>
+</span><span class='line'>    <span class="k">else</span>
+</span><span class='line'>      <span class="n">clean_text</span> <span class="o">&lt;&lt;</span> <span class="s2">&quot;${UNICODE:</span><span class="si">#{</span><span class="n">codepoint</span><span class="o">.</span><span class="n">to_s</span><span class="p">(</span><span class="mi">16</span><span class="p">)</span><span class="si">}</span><span class="s2">}&quot;</span>
+</span><span class='line'>    <span class="k">end</span>
+</span><span class='line'>  <span class="k">end</span>
+</span><span class='line'>  <span class="n">clean_text</span>
+</span><span class='line'><span class="k">end</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Relevant part from sieve script:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class='text'><span class='line'>unser b${UNICODE:fc}ro ist wegen ferienabwesenheit geschlossen.
+</span><span class='line'>in dringenden f${UNICODE:e4}llen erreichen sie uns unter ....
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h1><a id='tldr'></a> TL;DR</h1>
+
+<p>Use <code>String#each_codepoint</code> if you read a string and want to use the hex representation of its characters. Otherwhise you create
+an encoding problem without changing the encoding.</p>
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">Raffael Schmid</span></span>
+
+      
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2012-12-27T20:47:00+01:00" pubdate data-updated="true">Dec 27<span>th</span>, 2012</time>
+      
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/ascii/'>ASCII</a>, <a class='category' href='/blog/categories/ruby/'>Ruby</a>, <a class='category' href='/blog/categories/ruby1-9/'>Ruby1.9</a>, <a class='category' href='/blog/categories/unicode/'>Unicode</a>
+  
+</span>
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/2012/11/25/hubot-ubuntu-and-deb-packages/" title="Previous Post: Hubot, Ubuntu and .deb packages">&laquo; Hubot, Ubuntu and .deb packages</a>
+      
+      
+    </p>
+  </footer>
+</article>
+
+  <section>
+    <h1>Comments</h1>
+    <div id="disqus_thread" aria-live="polite"><noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+  </section>
+
+</div>
+
+<aside class="sidebar">
+  
+    
+<section>
+  <h1>About Me</h1>
+  <div id="twitter-profile" style="margin-top:0.5em;">
+    <p>
+      <strong>Raffael Schmid</strong> 
+      (<a href="http://twitter.com/rafschmid">@rafschmid</a>)
+    </p>
+    <p></p>
+  </div>
+  <script type="text/javascript">
+    $.domReady(function(){
+        var container = $('#twitter-profile'),
+            user = "rafschmid";
+        
+        function parseTwLinks(s) {
+          var twUrl = "http://www.twitter.com/"
+          s = s.replace(/ (@([\w]+))/g, function(match, p1, p2) {
+              return " <a href='"+twUrl+p2+"'>"+p1+"</a>"
+          }).replace(/ (#([\w]+))/g, function(match, p1, p2) {
+              return " <a href='"+twUrl+"#!/search?q=%23"+p2+"'>"+p1+"</a>"
+          })
+          return s
+        }
+
+        $.ajax({
+            url: "http://api.twitter.com/1/users/show.json?include_entities=false&screen_name="+user+"&callback=?"
+          , type: 'jsonp'
+          , error: function (err) { $('#twitter-profile').addClass('error');  }
+          , success: function(data) {
+              container.html('<img class="left" src="http://api.twitter.com/1/users/profile_image/'+user+'.json?size=bigger" alt="@'+user+'"><p><strong>'+data.name+'</strong> (<a href="http://twitter.com/'+user+'">@'+user+'</a>)<br/>'+data.location+'</p><p>'+parseTwLinks(data.description)+'</p>');
+            }
+        })
+      });
+  </script>
+</section>
+
+<section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2012/12/27/ruby1-dot-9-escape-non-ascii-chars/">Ruby1.9: Escape non-ASCII chars</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2012/11/25/hubot-ubuntu-and-deb-packages/">Hubot, Ubuntu and .deb packages</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2012/11/25/gem-version-reader/">Gem: Version Reader</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2012/11/24/hello-world/">Hello World</a>
+      </li>
+    
+  </ul>
+</section>
+
+<section>
+  <h1>GitHub Repos</h1>
+  <ul id="gh_repos">
+    <li class="loading">Status updating...</li>
+  </ul>
+  
+  <a href="https://github.com/luxflux">@luxflux</a> on GitHub
+  
+  <script type="text/javascript">
+    $.domReady(function(){
+        if (!window.jXHR){
+            var jxhr = document.createElement('script');
+            jxhr.type = 'text/javascript';
+            jxhr.src = '/javascripts/libs/jXHR.js';
+            var s = document.getElementsByTagName('script')[0];
+            s.parentNode.insertBefore(jxhr, s);
+        }
+
+        github.showRepos({
+            user: 'luxflux',
+            count: 0,
+            skip_forks: true,
+            target: '#gh_repos'
+        });
+    });
+  </script>
+  <script src="/javascripts/github.js" type="text/javascript"> </script>
+</section>
+
+<section>
+  <h1>Category Cloud</h1>
+    <span id="tag-cloud"><a href='/blog/categories/-deb' style='font-size: 120.0%'>.deb</a> <a href='/blog/categories/ascii' style='font-size: 120.0%'>ASCII</a> <a href='/blog/categories/gem' style='font-size: 120.0%'>Gem</a> <a href='/blog/categories/hubot' style='font-size: 120.0%'>Hubot</a> <a href='/blog/categories/rake' style='font-size: 120.0%'>Rake</a> <a href='/blog/categories/ruby' style='font-size: 160.0%'>Ruby</a> <a href='/blog/categories/ruby1-9' style='font-size: 120.0%'>Ruby1.9</a> <a href='/blog/categories/ubuntu' style='font-size: 120.0%'>Ubuntu</a> <a href='/blog/categories/unicode' style='font-size: 120.0%'>Unicode</a> <a href='/blog/categories/version-reader' style='font-size: 120.0%'>version_reader</a> </span>
+</section>
+
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2012 - Raffael Schmid -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+
+<script type="text/javascript">
+      var disqus_shortname = 'yuxchblog';
+      
+        
+        // var disqus_developer = 1;
+        var disqus_identifier = 'http://blog.yux.ch/blog/2012/12/27/ruby1-dot-9-escape-non-ascii-chars/';
+        var disqus_url = 'http://blog.yux.ch/blog/2012/12/27/ruby1-dot-9-escape-non-ascii-chars/';
+        var disqus_script = 'embed.js';
+      
+    (function () {
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = 'http://' + disqus_shortname + '.disqus.com/' + disqus_script;
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    }());
+</script>
+
+
+
+
+
+
+
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = 'http://platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+
+
+
+</body>
+</html>
