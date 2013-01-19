@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Category: Test | Passionate coding]]></title>
+  <link href="http://blog.yux.ch/blog/categories/test/atom.xml" rel="self"/>
+  <link href="http://blog.yux.ch/"/>
+  <updated>2013-01-19T19:09:47+01:00</updated>
+  <id>http://blog.yux.ch/</id>
+  <author>
+    <name><![CDATA[Raffael Schmid]]></name>
+    
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[Javascript tests with PhantomJS]]></title>
+    <link href="http://blog.yux.ch/blog/2013/01/19/javascript-tests-with-phantomjs/"/>
+    <updated>2013-01-19T17:57:00+01:00</updated>
+    <id>http://blog.yux.ch/blog/2013/01/19/javascript-tests-with-phantomjs</id>
+    <content type="html"><![CDATA[<p>Today I wanted to write some javascript tests for my <a href="https://github.com/luxflux/Moviez">Moviezz</a> project.</p>
+
+<p>Maybe two years ago, I've written javascript tests for a project at <a href="http://nine.ch">nine.ch</a>.
+I ended up by using Cucumber, Capybara and Selenium for this. The result was okay, but it took you a very long time to run the tests
+and you could not do anything else than watching your webbrowser clicking links and filling in text.</p>
+
+<p>Some weeks ago, I heard about PhantomJS and I waited since for the right chance to try it out.
+PhantomJS enables you to run your javascript tests headless, means no browser windows is opened and used to click and fill.
+This also gives you the ability to run your javascript tests via Jenkins or Travis.</p>
+
+<!-- more -->
+
+
+<p>At first, I verified that <code>capybara</code> is in my <code>Gemfile</code>.</p>
+
+<p><code>ruby Gemfile
+gem 'capybara', group: :test
+</code></p>
+
+<p>It also has to be loaded by <code>RSpec</code>, so I required it in <code>spec_helper</code>.
+<code>ruby spec/spec_helper.rb
+require 'capybara/rspec'
+require 'capybara/rails'
+</code></p>
+
+<p>After this, I went on and wrote the first javascript test with RSpec.
+Note the <code>js: true</code> on line 7, this switches the Capybara driver to the javascript adapter.</p>
+
+<p>```ruby spec/integration/search_movie_spec.rb
+require 'spec_helper'</p>
+
+<p>describe 'search for a movie' do</p>
+
+<p>  let(:tmdb_movie) { tmdb_result }</p>
+
+<p>  it 'searches for the given title', js: true do</p>
+
+<pre><code>visit new_movie_path
+page.should_not have_content('Star Wars Episode VII')
+fill_in 'title', with: 'Star Wars'
+page.should have_content('Star Wars Episode VII')
+</code></pre>
+
+<p>  end
+end
+```</p>
+
+<p>When I ran the test, Capybara opened a new Firefox window and did my defined steps as expected.</p>
+
+<p>To use PhantomJS with Capybara, you have to switch to another adapter.
+There is an adapter called Poltergeist which enables you to use PhantomJS.
+So I went on and added Poltergeist to my Gemfile.</p>
+
+<p><code>ruby Gemfile
+gem 'poltergeist', group: :test
+</code></p>
+
+<p>As soon as I required <code>capybara/poltergeist</code> and added <code>Capybara.javascript_driver = :poltergeist</code> in <code>spec_helper.rb</code>, my javascript test passed without opening a window.</p>
+
+<p>You cannot use transactions, which is the default, to cleanup your database after each javascript test, better explained <a href="https://github.com/jnicklas/capybara#transactions-and-database-setup">here</a>.
+To solve this, you can use <code>DatabaseCleaner</code> with the truncation strategy instead of transactions.</p>
+
+<p>But there is a caveat, the truncation strategy is slower.
+As I like my tests run fast, I wrote the following RSpec configuration which just enables the truncation strategy
+for tests with <code>js: true</code> set.</p>
+
+<p>```ruby spec/support/javascript.rb
+RSpec.configure do |config|</p>
+
+<p>  config.before :suite do</p>
+
+<pre><code>DatabaseCleaner.strategy = :transaction
+DatabaseCleaner.clean_with :truncation
+Capybara.javascript_driver = :poltergeist
+</code></pre>
+
+<p>  end</p>
+
+<p>  config.before :each do</p>
+
+<pre><code>if example.metadata[:js]
+  DatabaseCleaner.strategy = :truncation
+else
+  DatabaseCleaner.strategy = :transaction
+  DatabaseCleaner.start
+end
+</code></pre>
+
+<p>  end</p>
+
+<p>  config.after :each do</p>
+
+<pre><code>DatabaseCleaner.clean
+</code></pre>
+
+<p>  end</p>
+
+<p>end
+```</p>
+
+<p>Note, that I also moved <code>Capybara.javascript_driver = :poltergeist</code> into this config file as it belongs to the javascript configuration.</p>
+
+<p>After this, I just had to disable the default transactional feature in <code>spec_helper.rb</code>
+<code>ruby spec_helper.rb
+RSpec.configure do |config|
+  config.use_transactional_fixtures = false
+end
+</code></p>
+
+<p>Now, I have headless javascript tests and the fastest possible database cleanup strategy depending on the test type.</p>
+
+<p>All the code above can also be found <a href="https://gist.github.com/4573914">in a gist</a>.</p>
+]]></content>
+  </entry>
+  
+</feed>
