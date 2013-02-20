@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Category: Git | Passionate coding]]></title>
+  <link href="http://blog.yux.ch/blog/categories/git/atom.xml" rel="self"/>
+  <link href="http://blog.yux.ch/"/>
+  <updated>2013-02-20T22:52:59+01:00</updated>
+  <id>http://blog.yux.ch/</id>
+  <author>
+    <name><![CDATA[Raffael Schmid]]></name>
+    
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[Vim inline git diff]]></title>
+    <link href="http://blog.yux.ch/blog/2013/02/20/vim-inline-git-diff/"/>
+    <updated>2013-02-20T22:23:00+01:00</updated>
+    <id>http://blog.yux.ch/blog/2013/02/20/vim-inline-git-diff</id>
+    <content type="html"><![CDATA[<p>A few weeks ago, I heard about the Sublime Text Plugin <a href="https://github.com/jisaacks/GitGutter">GitGutter</a>.
+When I googled for an equivalent plugin for Vim, I did not find anything usable.
+There is <a href="http://www.vim.org/scripts/script.php?script_id=1881">Svndiff</a>, but I
+did not like the name and that you had to enable it by hand. So I put the topic
+aside and went on with other stuff.</p>
+
+<p>Last week, I started over with my Vim configuration. I was using the
+<a href="https://github.com/skwp/dotfiles">dotfiles of skwp</a> which included also a
+pretty nice Vim configuration. But after working with it for some months, I
+started to feel uncomfortable with it as it had just too much features.</p>
+
+<p>As part of building up my Vim configuration, I also checked again the topic
+of inline git annotations.
+I googled once more and found out, that these annotations are called <code>signs</code>
+in Vim. I also found the plugin of <a href="https://github.com/sickill/vim-git-inline-diff">sickill</a>.
+This plugin uses ruby (I did not even know, that is possible..!) to do the core work of
+parsing the diff and set the correct marks. Unfortunately it did not work for me...
+But hey, this is ruby. Let's fix this!</p>
+
+<p>After some hours of learning how to read <code>diff -u</code> output and tuning the algorithm to
+mark the correct lines, I had a working version of <code>vim-git-inline-diff</code>.</p>
+
+<p>I made a <a href="https://github.com/luxflux/vim-git-inline-diff">fork</a> of the existing plugin
+and added a <code>Readme</code>. There is also a possibility to configure the used symbols, now:</p>
+
+<p><img src="https://github.com/luxflux/vim-git-inline-diff/raw/master/_assets/example.png" alt="Screenshot" /></p>
+
+<p>Happy coding!</p>
+]]></content>
+  </entry>
+  
+</feed>

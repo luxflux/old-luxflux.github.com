@@ -4,7 +4,7 @@
   <title><![CDATA[Category: Ruby1.9 | Passionate coding]]></title>
   <link href="http://blog.yux.ch/blog/categories/ruby1-9/atom.xml" rel="self"/>
   <link href="http://blog.yux.ch/"/>
-  <updated>2013-01-19T19:09:47+01:00</updated>
+  <updated>2013-02-20T22:52:59+01:00</updated>
   <id>http://blog.yux.ch/</id>
   <author>
     <name><![CDATA[Raffael Schmid]]></name>
@@ -48,7 +48,7 @@ Putscript "mysievescript" {823+}
 require ["fileinto","vacation","body","date","relational"];</p>
 
 <p>if allof(not header :contains ["X-Spam-Flag"] "YES") {
-  vacation :days 3 :from "'Name FamilyName' <a href="&#x6d;&#x61;&#x69;&#x6c;&#x74;&#111;&#58;&#110;&#x61;&#x6d;&#101;&#x40;&#100;&#x6f;&#x6d;&#x61;&#105;&#110;&#46;&#x74;&#108;&#x64;">&#x6e;&#97;&#x6d;&#101;&#64;&#100;&#111;&#x6d;&#97;&#105;&#110;&#x2e;&#x74;&#108;&#x64;</a>" :subject "Abwesenheitsmeldung" "sehr geehrte damen und herren
+  vacation :days 3 :from "'Name FamilyName' <a href="&#x6d;&#x61;&#105;&#108;&#116;&#x6f;&#x3a;&#x6e;&#x61;&#109;&#101;&#64;&#100;&#x6f;&#x6d;&#97;&#x69;&#110;&#x2e;&#x74;&#108;&#100;">&#110;&#97;&#109;&#101;&#x40;&#100;&#x6f;&#x6d;&#97;&#x69;&#110;&#46;&#x74;&#108;&#x64;</a>" :subject "Abwesenheitsmeldung" "sehr geehrte damen und herren
 unser büro ist wegen ferienabwesenheit geschlossen. in dringenden fällen erreichen sie uns unter ....
 }</p>
 

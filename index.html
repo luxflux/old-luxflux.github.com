@@ -9,7 +9,8 @@
   <meta name="author" content="Raffael Schmid">
 
   
-  <meta name="description" content="Today I wanted to write some javascript tests for my Moviezz project. Maybe two years ago, I&#8217;ve written javascript tests for a project at nine. &hellip;">
+  <meta name="description" content="A few weeks ago, I heard about the Sublime Text Plugin GitGutter.
+When I googled for an equivalent plugin for Vim, I did not find anything usable. &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -76,6 +77,69 @@
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2013/02/20/vim-inline-git-diff/">Vim Inline Git Diff</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-02-20T22:23:00+01:00" pubdate data-updated="true">Feb 20<span>th</span>, 2013</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>A few weeks ago, I heard about the Sublime Text Plugin <a href="https://github.com/jisaacks/GitGutter">GitGutter</a>.
+When I googled for an equivalent plugin for Vim, I did not find anything usable.
+There is <a href="http://www.vim.org/scripts/script.php?script_id=1881">Svndiff</a>, but I
+did not like the name and that you had to enable it by hand. So I put the topic
+aside and went on with other stuff.</p>
+
+<p>Last week, I started over with my Vim configuration. I was using the
+<a href="https://github.com/skwp/dotfiles">dotfiles of skwp</a> which included also a
+pretty nice Vim configuration. But after working with it for some months, I
+started to feel uncomfortable with it as it had just too much features.</p>
+
+<p>As part of building up my Vim configuration, I also checked again the topic
+of inline git annotations.
+I googled once more and found out, that these annotations are called <code>signs</code>
+in Vim. I also found the plugin of <a href="https://github.com/sickill/vim-git-inline-diff">sickill</a>.
+This plugin uses ruby (I did not even know, that is possible..!) to do the core work of
+parsing the diff and set the correct marks. Unfortunately it did not work for me&#8230;
+But hey, this is ruby. Let&#8217;s fix this!</p>
+
+<p>After some hours of learning how to read <code>diff -u</code> output and tuning the algorithm to
+mark the correct lines, I had a working version of <code>vim-git-inline-diff</code>.</p>
+
+<p>I made a <a href="https://github.com/luxflux/vim-git-inline-diff">fork</a> of the existing plugin
+and added a <code>Readme</code>. There is also a possibility to configure the used symbols, now:</p>
+
+<p><img src="https://github.com/luxflux/vim-git-inline-diff/raw/master/_assets/example.png" alt="Screenshot" /></p>
+
+<p>Happy coding!</p>
+</div>
+  
+  
+
+
+    </article>
   
   
     <article>
@@ -380,6 +444,10 @@ powered by <a href="http://octopress.org/">Octopress</a>.</p>
   <ul id="recent_posts">
     
       <li class="post">
+        <a href="/blog/2013/02/20/vim-inline-git-diff/">Vim inline git diff</a>
+      </li>
+    
+      <li class="post">
         <a href="/blog/2013/01/19/javascript-tests-with-phantomjs/">Javascript tests with PhantomJS</a>
       </li>
     
@@ -393,10 +461,6 @@ powered by <a href="http://octopress.org/">Octopress</a>.</p>
     
       <li class="post">
         <a href="/blog/2012/11/25/gem-version-reader/">Gem: Version Reader</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2012/11/24/hello-world/">Hello World</a>
       </li>
     
   </ul>
@@ -433,7 +497,7 @@ powered by <a href="http://octopress.org/">Octopress</a>.</p>
 
 <section>
   <h1>Category Cloud</h1>
-    <span id="tag-cloud"><a href='/blog/categories/-deb' style='font-size: 115.0%'>.deb</a> <a href='/blog/categories/ascii' style='font-size: 115.0%'>ASCII</a> <a href='/blog/categories/capybara' style='font-size: 115.0%'>Capybara</a> <a href='/blog/categories/gem' style='font-size: 115.0%'>Gem</a> <a href='/blog/categories/hubot' style='font-size: 115.0%'>Hubot</a> <a href='/blog/categories/phantomjs' style='font-size: 115.0%'>PhantomJS</a> <a href='/blog/categories/rails' style='font-size: 115.0%'>Rails</a> <a href='/blog/categories/rake' style='font-size: 115.0%'>Rake</a> <a href='/blog/categories/rspec' style='font-size: 115.0%'>RSpec</a> <a href='/blog/categories/ruby' style='font-size: 160.0%'>Ruby</a> <a href='/blog/categories/ruby1-9' style='font-size: 115.0%'>Ruby1.9</a> <a href='/blog/categories/test' style='font-size: 115.0%'>Test</a> <a href='/blog/categories/ubuntu' style='font-size: 115.0%'>Ubuntu</a> <a href='/blog/categories/unicode' style='font-size: 115.0%'>Unicode</a> <a href='/blog/categories/version-reader' style='font-size: 115.0%'>version_reader</a> </span>
+    <span id="tag-cloud"><a href='/blog/categories/-deb' style='font-size: 112.0%'>.deb</a> <a href='/blog/categories/ascii' style='font-size: 112.0%'>ASCII</a> <a href='/blog/categories/capybara' style='font-size: 112.0%'>Capybara</a> <a href='/blog/categories/gem' style='font-size: 112.0%'>Gem</a> <a href='/blog/categories/git' style='font-size: 112.0%'>Git</a> <a href='/blog/categories/hubot' style='font-size: 112.0%'>Hubot</a> <a href='/blog/categories/phantomjs' style='font-size: 112.0%'>PhantomJS</a> <a href='/blog/categories/rails' style='font-size: 112.0%'>Rails</a> <a href='/blog/categories/rake' style='font-size: 112.0%'>Rake</a> <a href='/blog/categories/rspec' style='font-size: 112.0%'>RSpec</a> <a href='/blog/categories/ruby' style='font-size: 160.0%'>Ruby</a> <a href='/blog/categories/ruby1-9' style='font-size: 112.0%'>Ruby1.9</a> <a href='/blog/categories/test' style='font-size: 112.0%'>Test</a> <a href='/blog/categories/ubuntu' style='font-size: 112.0%'>Ubuntu</a> <a href='/blog/categories/unicode' style='font-size: 112.0%'>Unicode</a> <a href='/blog/categories/version-reader' style='font-size: 112.0%'>version_reader</a> <a href='/blog/categories/vim' style='font-size: 112.0%'>Vim</a> </span>
 </section>
 
   
