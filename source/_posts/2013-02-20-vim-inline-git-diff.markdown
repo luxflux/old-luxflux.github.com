@@ -21,8 +21,9 @@ As part of building up my Vim configuration, I also checked again the topic
 of inline git annotations.
 I googled once more and found out, that these annotations are called ```signs```
 in Vim. I also found the plugin of [sickill](https://github.com/sickill/vim-git-inline-diff).
-This plugin uses ruby to do the core work of parsing the diff and set the
-correct marks. Unfortunately it did not work for me... But hey, this is ruby. Let's fix this!
+This plugin uses ruby (I did not even know, that is possible..!) to do the core work of
+parsing the diff and set the correct marks. Unfortunately it did not work for me...
+But hey, this is ruby. Let's fix this!
 
 After some hours of learning how to read ```diff -u``` output and tuning the algorithm to
 mark the correct lines, I had a working version of ```vim-git-inline-diff```.
