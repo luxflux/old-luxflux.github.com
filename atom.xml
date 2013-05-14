@@ -4,7 +4,7 @@
   <title><![CDATA[Passionate coding]]></title>
   <link href="http://blog.yux.ch/atom.xml" rel="self"/>
   <link href="http://blog.yux.ch/"/>
-  <updated>2013-02-20T22:52:59+01:00</updated>
+  <updated>2013-05-14T19:29:24+02:00</updated>
   <id>http://blog.yux.ch/</id>
   <author>
     <name><![CDATA[Raffael Schmid]]></name>
@@ -206,7 +206,7 @@ for tests with <code>js: true</code> set.</p>
     <link href="http://blog.yux.ch/blog/2012/12/27/ruby1-dot-9-escape-non-ascii-chars/"/>
     <updated>2012-12-27T20:47:00+01:00</updated>
     <id>http://blog.yux.ch/blog/2012/12/27/ruby1-dot-9-escape-non-ascii-chars</id>
-    <content type="html"><![CDATA[<p>What I learned recently about Unicode and Ruby. There is a <a href="blog/2012/12/27/ruby1-dot-9-escape-non-ascii-chars/#tldr">TL;DR</a>.</p>
+    <content type="html"><![CDATA[<p>What I learned recently about Unicode and Ruby. There is a <a href="http://blog.yux.ch/blog/2012/12/27/ruby1-dot-9-escape-non-ascii-chars/#tldr">TL;DR</a>.</p>
 
 <!-- more -->
 

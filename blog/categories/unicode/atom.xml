@@ -4,7 +4,7 @@
   <title><![CDATA[Category: Unicode | Passionate coding]]></title>
   <link href="http://blog.yux.ch/blog/categories/unicode/atom.xml" rel="self"/>
   <link href="http://blog.yux.ch/"/>
-  <updated>2013-02-20T22:52:59+01:00</updated>
+  <updated>2013-05-14T19:29:24+02:00</updated>
   <id>http://blog.yux.ch/</id>
   <author>
     <name><![CDATA[Raffael Schmid]]></name>
@@ -18,7 +18,7 @@
     <link href="http://blog.yux.ch/blog/2012/12/27/ruby1-dot-9-escape-non-ascii-chars/"/>
     <updated>2012-12-27T20:47:00+01:00</updated>
     <id>http://blog.yux.ch/blog/2012/12/27/ruby1-dot-9-escape-non-ascii-chars</id>
-    <content type="html"><![CDATA[<p>What I learned recently about Unicode and Ruby. There is a <a href="blog/2012/12/27/ruby1-dot-9-escape-non-ascii-chars/#tldr">TL;DR</a>.</p>
+    <content type="html"><![CDATA[<p>What I learned recently about Unicode and Ruby. There is a <a href="/blog/2012/12/27/ruby1-dot-9-escape-non-ascii-chars/#tldr">TL;DR</a>.</p>
 
 <!-- more -->
 
@@ -48,7 +48,7 @@ Putscript "mysievescript" {823+}
 require ["fileinto","vacation","body","date","relational"];</p>
 
 <p>if allof(not header :contains ["X-Spam-Flag"] "YES") {
-  vacation :days 3 :from "'Name FamilyName' <a href="&#109;&#x61;&#x69;&#x6c;&#116;&#x6f;&#58;&#110;&#x61;&#109;&#101;&#64;&#x64;&#111;&#x6d;&#97;&#105;&#110;&#x2e;&#x74;&#x6c;&#100;">&#x6e;&#97;&#109;&#101;&#64;&#x64;&#x6f;&#109;&#97;&#x69;&#x6e;&#46;&#116;&#x6c;&#x64;</a>" :subject "Abwesenheitsmeldung" "sehr geehrte damen und herren
+  vacation :days 3 :from "'Name FamilyName' <a href="&#x6d;&#97;&#x69;&#108;&#x74;&#x6f;&#58;&#x6e;&#x61;&#x6d;&#101;&#x40;&#100;&#x6f;&#109;&#x61;&#x69;&#x6e;&#46;&#x74;&#108;&#100;">&#110;&#97;&#x6d;&#x65;&#x40;&#x64;&#111;&#x6d;&#97;&#x69;&#x6e;&#46;&#x74;&#108;&#x64;</a>" :subject "Abwesenheitsmeldung" "sehr geehrte damen und herren
 unser büro ist wegen ferienabwesenheit geschlossen. in dringenden fällen erreichen sie uns unter ....
 }</p>
 
