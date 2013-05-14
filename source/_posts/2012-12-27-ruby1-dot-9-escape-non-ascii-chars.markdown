@@ -6,7 +6,7 @@ comments: true
 categories: [Ruby, Ruby1.9, ASCII, Unicode]
 ---
 
-What I learned recently about Unicode and Ruby. There is a [TL;DR](blog/2012/12/27/ruby1-dot-9-escape-non-ascii-chars/#tldr).
+What I learned recently about Unicode and Ruby. There is a [TL;DR](/blog/2012/12/27/ruby1-dot-9-escape-non-ascii-chars/#tldr).
 
 <!-- more -->
 
