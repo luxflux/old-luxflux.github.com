@@ -5,12 +5,12 @@
 <!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
 <head>
   <meta charset="utf-8">
-  <title>Vim inline git diff - Passionate coding</title>
+  <title>Vim with Ctags - Passionate coding</title>
   <meta name="author" content="Raffael Schmid">
 
   
-  <meta name="description" content="A few weeks ago, I heard about the Sublime Text Plugin GitGutter.
-When I googled for an equivalent plugin for Vim, I did not find anything usable. &hellip;">
+  <meta name="description" content="Today I setup my Vim to use ctags. I want to use it in the situation where I am deep in a project checking the backtrace of a bug and
+are wondering &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -19,7 +19,7 @@ When I googled for an equivalent plugin for Vim, I did not find anything usable.
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   
-  <link rel="canonical" href="http://blog.yux.ch/blog/2013/02/20/vim-inline-git-diff/">
+  <link rel="canonical" href="http://blog.yux.ch/blog/2013/10/01/vim-with-ctags/">
   <link href="/favicon.png" rel="icon">
   <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
   <script src="/javascripts/modernizr-2.0.js"></script>
@@ -80,7 +80,7 @@ When I googled for an equivalent plugin for Vim, I did not find anything usable.
   
   <header>
     
-      <h1 class="entry-title">Vim Inline Git Diff</h1>
+      <h1 class="entry-title">Vim With Ctags</h1>
     
     
       <p class="meta">
@@ -96,41 +96,152 @@ When I googled for an equivalent plugin for Vim, I did not find anything usable.
   
 
 
-<time datetime="2013-02-20T22:23:00+01:00" pubdate data-updated="true">Feb 20<span>th</span>, 2013</time>
+<time datetime="2013-10-01T23:48:00+02:00" pubdate data-updated="true">Oct 1<span>st</span>, 2013</time>
         
       </p>
     
   </header>
 
 
-<div class="entry-content"><p>A few weeks ago, I heard about the Sublime Text Plugin <a href="https://github.com/jisaacks/GitGutter">GitGutter</a>.
-When I googled for an equivalent plugin for Vim, I did not find anything usable.
-There is <a href="http://www.vim.org/scripts/script.php?script_id=1881">Svndiff</a>, but I
-did not like the name and that you had to enable it by hand. So I put the topic
-aside and went on with other stuff.</p>
+<div class="entry-content"><p>Today I setup my Vim to use <a href="http://ctags.sourceforge.net/">ctags</a>.</p>
 
-<p>Last week, I started over with my Vim configuration. I was using the
-<a href="https://github.com/skwp/dotfiles">dotfiles of skwp</a> which included also a
-pretty nice Vim configuration. But after working with it for some months, I
-started to feel uncomfortable with it as it had just too much features.</p>
+<p>I want to use it in the situation where I am deep in a project checking the backtrace of a bug and
+are wondering what exactly a method call does. With <code>ctags</code> I can just hover the
+call and press <code>CTR + ]</code> to jump to the method definition which lies anywhere in
+your repository.</p>
 
-<p>As part of building up my Vim configuration, I also checked again the topic
-of inline git annotations.
-I googled once more and found out, that these annotations are called <code>signs</code>
-in Vim. I also found the plugin of <a href="https://github.com/sickill/vim-git-inline-diff">sickill</a>.
-This plugin uses ruby (I did not even know, that is possible..!) to do the core work of
-parsing the diff and set the correct marks. Unfortunately it did not work for me&#8230;
-But hey, this is ruby. Let&#8217;s fix this!</p>
+<p>If you are interested in such a setup, read on.</p>
 
-<p>After some hours of learning how to read <code>diff -u</code> output and tuning the algorithm to
-mark the correct lines, I had a working version of <code>vim-git-inline-diff</code>.</p>
+<!-- more -->
 
-<p>I made a <a href="https://github.com/luxflux/vim-git-inline-diff">fork</a> of the existing plugin
-and added a <code>Readme</code>. There is also a possibility to configure the used symbols, now:</p>
 
-<p><img src="https://github.com/luxflux/vim-git-inline-diff/raw/master/_assets/example.png" alt="Screenshot" /></p>
+<h2>Installing ctags</h2>
 
-<p>Happy coding!</p>
+<p>Install ctags with your package manager. On Mac OS X the best way is to use
+<a href="http://brew.sh/">brew</a>:</p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='console'><span class='line'><span class="go">brew install ctags</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h2>Configuring the git hooks</h2>
+
+<p>As I didn&#8217;t want to run ctags manually after every file change, I configured
+some Git hooks (check <a href="http://tbaggery.com/2011/08/08/effortless-ctags-with-git.html">tpope&#8217;s blog</a> for more
+background informations).</p>
+
+<p>First, setup Git to use a templatedir when creating a repository or running <code>git init</code>.</p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class='console'><span class='line'><span class="go">git config --global init.templatedir &#39;~/.git_template&#39;</span>
+</span><span class='line'><span class="go">mkdir -p ~/.git_template/hooks</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Then create a script (<code>.git_template/hooks/ctags</code>) which calls <code>ctags</code> to reindex the current repository.
+The content of this script looks like this:</p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="c">#!/bin/sh</span>
+</span><span class='line'><span class="nb">set</span> -e
+</span><span class='line'><span class="nv">PATH</span><span class="o">=</span><span class="s2">&quot;/usr/local/bin:$PATH&quot;</span>
+</span><span class='line'><span class="nb">trap</span> <span class="s2">&quot;rm -f .git/tags.$$&quot;</span> EXIT
+</span><span class='line'>ctags --tag-relative -Rf.git/tags.<span class="nv">$$</span> --exclude<span class="o">=</span>.git --exclude<span class="o">=</span>tmp --exclude<span class="o">=</span>coverage --languages<span class="o">=</span>-javascript,sql
+</span><span class='line'>mv .git/tags.<span class="nv">$$</span> .git/tags
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>I already included the <code>exclude</code> directive for <code>tmp</code> and <code>coverage</code> which I
+don&#8217;t want to have indexed by ctags. Feel free to remove these or add any other.</p>
+
+<p>Now, create all the Git hooks scripts (<code>.git_template/hooks/post-checkout</code>,
+<code>.git_template/hooks/post-merge</code>, <code>.git_template/hooks/post-commit</code>) with the
+following content:</p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="c">#!/bin/sh</span>
+</span><span class='line'>.git/hooks/ctags &gt;/dev/null 2&gt;&amp;1 &amp;
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>There is one special script (<code>.git_template/hooks/post-rewrite</code>) in which we
+have to catch the rebase hook only:</p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="c">#!/bin/sh</span>
+</span><span class='line'><span class="k">case</span> <span class="s2">&quot;$1&quot;</span> in
+</span><span class='line'>  rebase<span class="o">)</span> <span class="nb">exec</span> .git/hooks/post-merge ;;
+</span><span class='line'><span class="k">esac</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>As these scripts save your <code>tags</code> file in <code>.git</code>, you don&#8217;t have to worry about
+adding it to <code>.gitignore</code> and its a project specific file. I wanted a project
+specific index as I don&#8217;t often search for methods which are saved in another
+Git repository.
+Another plus is, that the Vim plugin
+<a href="https://github.com/tpope/vim-fugitive">fugitive</a> (which I strongly suggest to
+install) will automatically configure Vim for this file location.</p>
+
+<h2>Setup the repos</h2>
+
+<p>If you want to install these hooks in an existing repository, just use <code>git
+init</code> and it will copy them in.
+For new repositories, they will be created automatically.</p>
+
+<h2>Setup Vim</h2>
+
+<p>Vim has builtin support for <code>ctags</code> via its <a href="http://vim.wikia.com/wiki/Browsing_programs_with_tags">tags
+function</a>, so none of the
+following plugins are really needed.</p>
+
+<h3>fugitive</h3>
+
+<p>Install plugin <a href="https://github.com/tpope/vim-fugitive">fugitive</a> which helps you
+a lot when writing stuff in a Git repository.</p>
+
+<h3>Tagbar</h3>
+
+<p>Consider using <a href="https://github.com/majutsushi/tagbar">tagbar</a> to have a sidebar
+with the <code>ctags</code> of your current buffer.
+In case you want to use <code>tagbar</code>, also think about opening it automatically. Put
+the following configuration in your <code>vimrc</code>:</p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='vim'><span class='line'>autocmd <span class="nb">VimEnter</span> * TagbarToggle
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h3>Easytags</h3>
+
+<p>Maybe use <a href="https://github.com/xolox/vim-easytags">easytags</a>. It supports
+reindexing the ctags upon saving the buffer.
+If you want to use <code>easytags</code>, ensure that the configuration corresponds with
+the setup above:</p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+</pre></td><td class='code'><pre><code class='vim'><span class='line'><span class="c">&quot; ensure it checks the project specific tags file</span>
+</span><span class='line'><span class="k">let</span> <span class="k">g</span>:easytags_dynamic_files <span class="p">=</span> <span class="m">1</span>
+</span><span class='line'><span class="c">&quot; configure easytags to run ctags after saving the buffer</span>
+</span><span class='line'><span class="k">let</span> <span class="k">g</span>:easytags_events <span class="p">=</span> [<span class="s1">&#39;BufWritePost&#39;</span>]
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Happy debugging!</p>
 </div>
 
 
@@ -153,12 +264,12 @@ and added a <code>Readme</code>. There is also a possibility to configure the us
   
 
 
-<time datetime="2013-02-20T22:23:00+01:00" pubdate data-updated="true">Feb 20<span>th</span>, 2013</time>
+<time datetime="2013-10-01T23:48:00+02:00" pubdate data-updated="true">Oct 1<span>st</span>, 2013</time>
       
 
 <span class="categories">
   
-    <a class='category' href='/blog/categories/git/'>Git</a>, <a class='category' href='/blog/categories/ruby/'>Ruby</a>, <a class='category' href='/blog/categories/vim/'>Vim</a>
+    <a class='category' href='/blog/categories/vim/'>Vim</a>
   
 </span>
 
@@ -174,10 +285,8 @@ and added a <code>Readme</code>. There is also a possibility to configure the us
     
     <p class="meta">
       
-        <a class="basic-alignment left" href="/blog/2013/01/19/javascript-tests-with-phantomjs/" title="Previous Post: Javascript tests with PhantomJS">&laquo; Javascript tests with PhantomJS</a>
+        <a class="basic-alignment left" href="/blog/2013/02/20/vim-inline-git-diff/" title="Previous Post: Vim inline git diff">&laquo; Vim inline git diff</a>
       
-      
-        <a class="basic-alignment right" href="/blog/2013/10/01/vim-with-ctags/" title="Next Post: Vim with Ctags">Vim with Ctags &raquo;</a>
       
     </p>
   </footer>
@@ -310,8 +419,8 @@ and added a <code>Readme</code>. There is also a possibility to configure the us
       
         
         // var disqus_developer = 1;
-        var disqus_identifier = 'http://blog.yux.ch/blog/2013/02/20/vim-inline-git-diff/';
-        var disqus_url = 'http://blog.yux.ch/blog/2013/02/20/vim-inline-git-diff/';
+        var disqus_identifier = 'http://blog.yux.ch/blog/2013/10/01/vim-with-ctags/';
+        var disqus_url = 'http://blog.yux.ch/blog/2013/10/01/vim-with-ctags/';
         var disqus_script = 'embed.js';
       
     (function () {
