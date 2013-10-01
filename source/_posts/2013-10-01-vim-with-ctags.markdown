@@ -8,9 +8,10 @@ categories: [Vim]
 
 Today I setup my Vim to use [ctags](http://ctags.sourceforge.net/).
 
-If you are deep in a project checking the backtrace of a bug and
-are wondering what exactly a method call does, you can just hover it and
-press `CTR + ]` to jump to the method definition.
+I want to use it in the situation where I am deep in a project checking the backtrace of a bug and
+are wondering what exactly a method call does. With `ctags` I can just hover the
+call and press `CTR + ]` to jump to the method definition which lies anywhere in
+your repository.
 
 If you are interested in such a setup, read on.
 
