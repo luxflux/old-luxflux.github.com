@@ -4,7 +4,7 @@
   <title><![CDATA[Passionate coding]]></title>
   <link href="http://blog.yux.ch/atom.xml" rel="self"/>
   <link href="http://blog.yux.ch/"/>
-  <updated>2013-10-02T01:09:34+02:00</updated>
+  <updated>2013-10-02T01:16:15+02:00</updated>
   <id>http://blog.yux.ch/</id>
   <author>
     <name><![CDATA[Raffael Schmid]]></name>
@@ -46,7 +46,7 @@ your repository.</p>
 some Git hooks (check <a href="http://tbaggery.com/2011/08/08/effortless-ctags-with-git.html">tpope&#8217;s blog</a> for more
 background informations).</p>
 
-<p>First, setup Git to use a templatedir when creating a repository or running <code>git init</code>.</p>
+<p>First, setup Git to use a <code>templatedir</code> when creating a repository or running <code>git init</code>.</p>
 
 <figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
@@ -101,7 +101,7 @@ have to catch the rebase hook only:</p>
 </span></code></pre></td></tr></table></div></figure>
 
 
-<p>As these scripts save your <code>tags</code> file in <code>.git</code>, you don&#8217;t have to worry about
+<p>As these scripts save your <code>tags</code> file in <code>.git</code> (= <code>.git/tags</code>), you don&#8217;t have to worry about
 adding it to <code>.gitignore</code> and its a project specific file. I wanted a project
 specific index as I don&#8217;t often search for methods which are saved in another
 Git repository.
@@ -123,7 +123,7 @@ following plugins are really needed.</p>
 
 <h3>fugitive</h3>
 
-<p>Install plugin <a href="https://github.com/tpope/vim-fugitive">fugitive</a> which helps you
+<p>Install <a href="https://github.com/tpope/vim-fugitive">fugitive</a> which helps you
 a lot when writing stuff in a Git repository.</p>
 
 <h3>Tagbar</h3>
