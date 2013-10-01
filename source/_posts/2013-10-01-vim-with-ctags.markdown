@@ -96,7 +96,7 @@ following plugins are really needed.
 
 ### fugitive
 
-Install plugin [fugitive](https://github.com/tpope/vim-fugitive) which helps you
+Install [fugitive](https://github.com/tpope/vim-fugitive) which helps you
 a lot when writing stuff in a Git repository.
 
 ### Tagbar
