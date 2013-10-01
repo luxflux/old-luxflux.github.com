@@ -32,7 +32,7 @@ As I didn't want to run ctags manually after every file change, I configured
 some Git hooks (check [tpope's blog](http://tbaggery.com/2011/08/08/effortless-ctags-with-git.html) for more
 background informations).
 
-First, setup Git to use a templatedir when creating a repository or running `git init`.
+First, setup Git to use a `templatedir` when creating a repository or running `git init`.
 
 {% codeblock lang:console %}
 git config --global init.templatedir '~/.git_template'
@@ -74,7 +74,7 @@ case "$1" in
 esac
 {% endcodeblock %}
 
-As these scripts save your `tags` file in `.git`, you don't have to worry about
+As these scripts save your `tags` file in `.git` (= `.git/tags`), you don't have to worry about
 adding it to `.gitignore` and its a project specific file. I wanted a project
 specific index as I don't often search for methods which are saved in another
 Git repository.
